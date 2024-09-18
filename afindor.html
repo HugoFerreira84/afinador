@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afinador de Violão</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            margin-top: 50px;
+        }
+        .status {
+            margin: 20px;
+            font-size: 18px;
+        }
+        .note {
+            font-size: 36px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Afinador de Violão</h1>
+    <div id="status" class="status">Clique em "Iniciar" para começar a afinar.</div>
+    <div id="note-detected" class="note">---</div>
+    <button id="start-btn">Iniciar</button>
+    <button id="stop-btn">Parar</button>
+
+    <script src="./js/afinador.js"></script>
+</body>
+</html>
