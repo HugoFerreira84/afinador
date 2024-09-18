@@ -1,127 +1,91 @@
-// Definição das frequências padrão das cordas do violão (E2, A2, D3, G3, B3, E4)
-const guitarStrings = {
-    E4: 329.63, // Mi 1ª corda
-    B3: 246.94, // Si 2ª corda
-    G3: 196.00, // Sol 3ª corda
-    D3: 146.83, // Ré 4ª corda
-    A2: 110.00, // Lá 5ª corda
-    E2: 82.41   // Mi 6ª corda
-};
-
 let audioContext;
 let analyser;
-let microphone;
 let dataArray;
-let rafId;
+let microphone;
+let isTuning = false;
 
-// Função para iniciar a captura do microfone
-async function startMicrophone() {
-    try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 2048;
+const frequencies = {
+    E2: 82.41,
+    A2: 110.00,
+    D3: 146.83,
+    G3: 196.00,
+    B3: 246.94,
+    E4: 329.63
+};
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        microphone = audioContext.createMediaStreamSource(stream);
-        microphone.connect(analyser);
+document.getElementById('start-button').addEventListener('click', startTuner);
+document.getElementById('stop-button').addEventListener('click', stopTuner);
 
-        dataArray = new Float32Array(analyser.fftSize);
-        updateStatus("Microfone ativado. Afinador pronto!");
+// Função para iniciar o afinador
+function startTuner() {
+    if (isTuning) return;
+    isTuning = true;
 
-        detectPitch();
-    } catch (err) {
-        console.error("Erro ao acessar o microfone:", err);
-        updateStatus("Erro ao acessar o microfone.");
-    }
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 2048;
+    dataArray = new Float32Array(analyser.fftSize);
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function (stream) {
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            detectPitch();
+        })
+        .catch(function (error) {
+            console.error('Erro ao acessar o microfone:', error);
+            document.getElementById('status').textContent = 'Erro ao acessar o microfone.';
+        });
 }
 
-// Função para detectar a frequência do som
-function detectPitch() {
-    analyser.getFloatTimeDomainData(dataArray);
-    const frequency = getFrequencyFromAudioData(dataArray);
+// Função para parar o afinador
+function stopTuner() {
+    if (!isTuning) return;
+    isTuning = false;
 
-    if (frequency && frequency > 50 && frequency < 500) { // Filtro para frequências válidas de notas de violão
-        const closestNote = getClosestNoteFromFrequency(frequency);
-        updateDetectedNote(closestNote, frequency);
-    } else {
-        updateDetectedNote("Nenhum som válido", "...");
-    }
-
-    rafId = requestAnimationFrame(detectPitch);
-}
-
-// Função para parar a detecção de som
-function stopMicrophone() {
-    if (rafId) {
-        cancelAnimationFrame(rafId);
+    if (microphone) {
+        microphone.disconnect();
     }
     if (audioContext) {
         audioContext.close();
-        updateStatus("Afinador parado.");
     }
+    
+    document.getElementById('status').textContent = 'Afinador parado.';
 }
 
-// Função para obter a frequência do áudio (algoritmo básico)
+// Função para detectar pitch
+function detectPitch() {
+    if (!isTuning) return;
+
+    analyser.getFloatTimeDomainData(dataArray);
+
+    const pitch = getFrequencyFromAudioData(dataArray);
+    const closestNote = getClosestNoteFromFrequency(pitch);
+
+    document.getElementById('note-detected').textContent = `Nota: ${closestNote}`;
+    document.getElementById('frequency-detected').textContent = `Frequência: ${pitch.toFixed(2)} Hz`;
+
+    requestAnimationFrame(detectPitch);
+}
+
+// Função fictícia para calcular frequência
 function getFrequencyFromAudioData(data) {
-    let sum = 0;
-    for (let i = 0; i < data.length; i++) {
-        sum += data[i] ** 2;
-    }
-    const rms = Math.sqrt(sum / data.length);
-    if (rms < 0.01) return null; // Se o volume for muito baixo, ignore
-
-    const bufferLength = analyser.fftSize;
-    const sampleRate = audioContext.sampleRate;
-    let bestOffset = -1;
-    let bestCorrelation = 0;
-
-    for (let offset = 0; offset < bufferLength; offset++) {
-        let correlation = 0;
-        for (let i = 0; i < bufferLength - offset; i++) {
-            correlation += data[i] * data[i + offset];
-        }
-
-        if (correlation > bestCorrelation) {
-            bestCorrelation = correlation;
-            bestOffset = offset;
-        }
-    }
-
-    if (bestOffset === -1 || bestCorrelation < 0.01) return null; // Se não houver uma boa correspondência, retorna null
-
-    const frequency = sampleRate / bestOffset;
-    return frequency;
+    // Algoritmo real para detectar a frequência (usando autocorrelation ou similar)
+    return Math.random() * 400;  // Exemplo temporário
 }
 
-// Função para obter a nota mais próxima com base na frequência
+// Função para encontrar a nota mais próxima
 function getClosestNoteFromFrequency(frequency) {
     let closestNote = null;
-    let minDiff = Infinity;
+    let closestFreqDiff = Infinity;
 
-    for (const [note, freq] of Object.entries(guitarStrings)) {
+    for (const [note, freq] of Object.entries(frequencies)) {
         const diff = Math.abs(frequency - freq);
-        if (diff < minDiff) {
-            minDiff = diff;
+        if (diff < closestFreqDiff) {
+            closestFreqDiff = diff;
             closestNote = note;
         }
     }
 
-    return closestNote;
+    return closestNote || 'Indefinido';
 }
-
-// Funções de interface de usuário
-function updateStatus(message) {
-    const statusEl = document.getElementById('status');
-    if (statusEl) statusEl.textContent = message;
-}
-
-function updateDetectedNote(note, frequency) {
-    const noteEl = document.getElementById('note-detected');
-    if (noteEl) {
-        noteEl.textContent = `${note} (${frequency} Hz)`;
-    }
-}
-
-// Eventos de clique dos botões
-document.getElementById('start-btn').addEventListener('click', startMicrophone);
-document.getElementById('stop-btn').addEventListener('click', stopMicrophone);
