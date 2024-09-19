@@ -1,4 +1,3 @@
-// Notas pré-definidas do violão e suas frequências
 const notas = {
     "E2": 82.41,
     "A2": 110.00,
@@ -16,6 +15,7 @@ let running = false;
 const statusElement = document.getElementById('status');
 const frequencyElement = document.getElementById('frequency');
 const noteElement = document.getElementById('note');
+const pointerElement = document.getElementById('pointer');
 const toggleButton = document.getElementById('toggle-btn');
 const errorMsg = document.getElementById('error-msg');
 
@@ -75,6 +75,8 @@ function detectarFrequencia() {
         const notaMaisProxima = obterNotaMaisProxima(frequencia);
         frequencyElement.textContent = `Frequência: ${frequencia.toFixed(2)} Hz`;
         noteElement.textContent = `Nota: ${notaMaisProxima || 'Desconhecida'}`;
+
+        atualizarPonteiro(frequencia, notaMaisProxima);
     } else {
         frequencyElement.textContent = 'Frequência: -- Hz';
         noteElement.textContent = 'Nota: --';
@@ -90,7 +92,7 @@ function calcularFrequencia(buffer) {
 
     if (rms < 0.01) return null; // Sem som detectado
 
-    for (let offset = 1; offset < buffer.length / 2; offset++) { // offset começa em 1 para evitar divisão por zero
+    for (let offset = 1; offset < buffer.length / 2; offset++) {
         let corr = 0;
 
         for (let i = 0; i < buffer.length / 2; i++) {
@@ -123,4 +125,22 @@ function obterNotaMaisProxima(frequencia) {
     }
 
     return notaMaisProxima;
+}
+
+function atualizarPonteiro(frequencia, nota) {
+    const freqAlvo = notas[nota];
+    if (!freqAlvo) return;
+
+    const diferenca = frequencia - freqAlvo;
+    const maxDif = 20; // Limite máximo de desvio em Hz
+    const rotacao = Math.min(Math.max(diferenca / maxDif, -1), 1) * 45; // Rotação em graus
+
+    pointerElement.style.transform = `rotate(${rotacao}deg)`;
+
+    // Alterar cor do ponteiro dependendo da proximidade
+    if (Math.abs(diferenca) < 1) {
+        pointerElement.style.backgroundColor = 'green';
+    } else {
+        pointerElement.style.backgroundColor = 'red';
+    }
 }
