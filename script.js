@@ -32,7 +32,6 @@ toggleButton.addEventListener('click', () => {
     }
 });
 
-// Alterna entre os modos de afinação
 modeSelectElements.forEach(radio => {
     radio.addEventListener('change', (event) => {
         modoAfinacao = event.target.value;
