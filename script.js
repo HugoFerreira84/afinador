@@ -11,6 +11,8 @@ let audioContext;
 let analyser;
 let dataArray;
 let running = false;
+let modoAfinacao = "auto";
+let cordaSelecionada = null;
 
 const statusElement = document.getElementById('status');
 const frequencyElement = document.getElementById('frequency');
@@ -18,6 +20,9 @@ const noteElement = document.getElementById('note');
 const pointerElement = document.getElementById('pointer');
 const toggleButton = document.getElementById('toggle-btn');
 const errorMsg = document.getElementById('error-msg');
+const modeSelectElements = document.getElementsByName('mode');
+const stringSelect = document.getElementById('string-select');
+const manualSelectDiv = document.getElementById('manual-select');
 
 toggleButton.addEventListener('click', () => {
     if (running) {
@@ -25,6 +30,14 @@ toggleButton.addEventListener('click', () => {
     } else {
         iniciarAfinador();
     }
+});
+
+// Alterna entre os modos de afinação
+modeSelectElements.forEach(radio => {
+    radio.addEventListener('change', (event) => {
+        modoAfinacao = event.target.value;
+        manualSelectDiv.style.display = (modoAfinacao === 'manual') ? 'block' : 'none';
+    });
 });
 
 function iniciarAfinador() {
@@ -113,6 +126,11 @@ function calcularFrequencia(buffer) {
 }
 
 function obterNotaMaisProxima(frequencia) {
+    if (modoAfinacao === "manual") {
+        const corda = stringSelect.value;
+        return corda;
+    }
+
     let notaMaisProxima = null;
     let menorDiferenca = Infinity;
 
