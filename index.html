@@ -10,10 +10,8 @@
             text-align: center;
             background-color: #f4f4f4;
         }
-  .tuner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.tuner {
+    text-align: center;
     margin-top: 20px;
 }
 
@@ -21,43 +19,31 @@
     position: relative;
     width: 200px;
     height: 200px;
-    border: 5px solid #333;
+    margin: 0 auto;
+    border: 10px solid #333;
     border-radius: 50%;
-    background: linear-gradient(180deg, #333, #777);
-    box-shadow: inset 0px 0px 20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
 }
 
 .pointer {
     position: absolute;
     width: 2px;
-    height: 100px;
-    background-color: red;
-    transform-origin: 50% 100%;
-    top: 50px;
-    left: 50%;
-    transform: rotate(0deg);
-    transition: transform 0.1s ease-out;
+    height: 90px;
+    background: red;
+    transform-origin: bottom center;
+    transition: transform 0.2s;
 }
 
 .note {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     font-size: 24px;
     font-weight: bold;
-    color: white;
 }
 
-.status, .frequency, .error-msg {
-    font-size: 18px;
-    color: white;
-    text-align: center;
-    margin-top: 10px;
-}
-        .mode-select {
+.mode-select {
     margin-top: 20px;
-    text-align: center;
 }
 
 .mode-select label {
