@@ -16,6 +16,7 @@ const statusElement = document.getElementById('status');
 const frequencyElement = document.getElementById('frequency');
 const noteElement = document.getElementById('note');
 const toggleButton = document.getElementById('toggle-btn');
+const errorMsg = document.getElementById('error-msg');
 
 toggleButton.addEventListener('click', () => {
     if (running) {
@@ -26,34 +27,41 @@ toggleButton.addEventListener('click', () => {
 });
 
 function iniciarAfinador() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const source = audioContext.createMediaStreamSource(stream);
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 2048;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(stream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
 
-            const bufferLength = analyser.fftSize;
-            dataArray = new Float32Array(bufferLength);
+                const bufferLength = analyser.fftSize;
+                dataArray = new Float32Array(bufferLength);
 
-            source.connect(analyser);
-            statusElement.textContent = "Afinando...";
-            running = true;
-            toggleButton.textContent = "Parar";
+                source.connect(analyser);
+                statusElement.textContent = "Afinando...";
+                errorMsg.textContent = ''; // Limpar mensagem de erro
+                running = true;
+                toggleButton.textContent = "Parar";
 
-            detectarFrequencia();
-        })
-        .catch(error => {
-            console.error('Erro ao acessar o microfone:', error);
-            statusElement.textContent = "Erro ao acessar o microfone";
-        });
+                detectarFrequencia();
+            })
+            .catch(error => {
+                console.error('Erro ao acessar o microfone:', error);
+                errorMsg.textContent = 'Erro ao acessar o microfone. Verifique as permissões.';
+            });
+    } else {
+        errorMsg.textContent = 'Navegador não suporta acesso ao microfone.';
+    }
 }
 
 function pararAfinador() {
-    audioContext.close();
-    statusElement.textContent = "Afinador parado.";
-    toggleButton.textContent = "Iniciar";
-    running = false;
+    if (audioContext) {
+        audioContext.close();
+        statusElement.textContent = "Afinador parado.";
+        toggleButton.textContent = "Iniciar";
+        running = false;
+    }
 }
 
 function detectarFrequencia() {
