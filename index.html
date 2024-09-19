@@ -4,20 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Afinador de Violão</title>
- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            margin-top: 50px;
+        }
+        .status {
+            margin: 20px;
+            font-size: 18px;
+        }
+        .note {
+            font-size: 36px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 class="text-center mt-5">Afinador de Violão</h1>
-        <button id="start-button" class="btn btn-primary mt-3">Iniciar Afinador</button>
-        <button id="stop-button" class="btn btn-danger mt-3">Parar Afinador</button>
-        
-        <div id="status" class="mt-3"></div>
-        <div id="note-detected" class="mt-3"></div>
-        <div id="frequency-detected" class="mt-3"></div>
+    <h1>Afinador de Violão</h1>
+    <div class="display">
+        <h2 id="status">Clique em Iniciar</h2>
+        <h2 id="frequency">Frequência: -- Hz</h2>
+        <h2 id="note">Nota: --</h2>
+        <button id="toggle-btn">Iniciar</button>
     </div>
 
-    <script src="script.js"></script>
+    <script src="js/script1.js"></script>
 </body>
 </html>
