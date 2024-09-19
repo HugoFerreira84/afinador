@@ -1,3 +1,4 @@
+// Notas pré-definidas do violão e suas frequências
 const notas = {
     "E2": 82.41,
     "A2": 110.00,
@@ -70,10 +71,10 @@ function detectarFrequencia() {
     analyser.getFloatTimeDomainData(dataArray);
 
     const frequencia = calcularFrequencia(dataArray);
-    if (frequencia !== null) {
+    if (frequencia !== null && isFinite(frequencia)) {
         const notaMaisProxima = obterNotaMaisProxima(frequencia);
         frequencyElement.textContent = `Frequência: ${frequencia.toFixed(2)} Hz`;
-        noteElement.textContent = `Nota: ${notaMaisProxima}`;
+        noteElement.textContent = `Nota: ${notaMaisProxima || 'Desconhecida'}`;
     } else {
         frequencyElement.textContent = 'Frequência: -- Hz';
         noteElement.textContent = 'Nota: --';
@@ -89,7 +90,7 @@ function calcularFrequencia(buffer) {
 
     if (rms < 0.01) return null; // Sem som detectado
 
-    for (let offset = 0; offset < buffer.length / 2; offset++) {
+    for (let offset = 1; offset < buffer.length / 2; offset++) { // offset começa em 1 para evitar divisão por zero
         let corr = 0;
 
         for (let i = 0; i < buffer.length / 2; i++) {
@@ -102,8 +103,11 @@ function calcularFrequencia(buffer) {
         }
     }
 
-    const freq = audioContext.sampleRate / bestOffset;
-    return freq;
+    if (bestOffset > 0) {
+        const freq = audioContext.sampleRate / bestOffset;
+        return freq;
+    }
+    return null;
 }
 
 function obterNotaMaisProxima(frequencia) {
