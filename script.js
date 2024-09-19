@@ -1,91 +1,114 @@
+const notas = {
+    "E2": 82.41,
+    "A2": 110.00,
+    "D3": 146.83,
+    "G3": 196.00,
+    "B3": 246.94,
+    "E4": 329.63
+};
+
 let audioContext;
 let analyser;
 let dataArray;
-let microphone;
-let isTuning = false;
+let running = false;
 
-const frequencies = {
-    E2: 82.41,
-    A2: 110.00,
-    D3: 146.83,
-    G3: 196.00,
-    B3: 246.94,
-    E4: 329.63
-};
+const statusElement = document.getElementById('status');
+const frequencyElement = document.getElementById('frequency');
+const noteElement = document.getElementById('note');
+const toggleButton = document.getElementById('toggle-btn');
 
-document.getElementById('start-button').addEventListener('click', startTuner);
-document.getElementById('stop-button').addEventListener('click', stopTuner);
+toggleButton.addEventListener('click', () => {
+    if (running) {
+        pararAfinador();
+    } else {
+        iniciarAfinador();
+    }
+});
 
-// Função para iniciar o afinador
-function startTuner() {
-    if (isTuning) return;
-    isTuning = true;
-
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    dataArray = new Float32Array(analyser.fftSize);
-
+function iniciarAfinador() {
     navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function (stream) {
-            microphone = audioContext.createMediaStreamSource(stream);
-            microphone.connect(analyser);
-            detectPitch();
+        .then(stream => {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(stream);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 2048;
+
+            const bufferLength = analyser.fftSize;
+            dataArray = new Float32Array(bufferLength);
+
+            source.connect(analyser);
+            statusElement.textContent = "Afinando...";
+            running = true;
+            toggleButton.textContent = "Parar";
+
+            detectarFrequencia();
         })
-        .catch(function (error) {
+        .catch(error => {
             console.error('Erro ao acessar o microfone:', error);
-            document.getElementById('status').textContent = 'Erro ao acessar o microfone.';
+            statusElement.textContent = "Erro ao acessar o microfone";
         });
 }
 
-// Função para parar o afinador
-function stopTuner() {
-    if (!isTuning) return;
-    isTuning = false;
-
-    if (microphone) {
-        microphone.disconnect();
-    }
-    if (audioContext) {
-        audioContext.close();
-    }
-    
-    document.getElementById('status').textContent = 'Afinador parado.';
+function pararAfinador() {
+    audioContext.close();
+    statusElement.textContent = "Afinador parado.";
+    toggleButton.textContent = "Iniciar";
+    running = false;
 }
 
-// Função para detectar pitch
-function detectPitch() {
-    if (!isTuning) return;
+function detectarFrequencia() {
+    if (!running) return;
 
     analyser.getFloatTimeDomainData(dataArray);
 
-    const pitch = getFrequencyFromAudioData(dataArray);
-    const closestNote = getClosestNoteFromFrequency(pitch);
+    const frequencia = calcularFrequencia(dataArray);
+    if (frequencia !== null) {
+        const notaMaisProxima = obterNotaMaisProxima(frequencia);
+        frequencyElement.textContent = `Frequência: ${frequencia.toFixed(2)} Hz`;
+        noteElement.textContent = `Nota: ${notaMaisProxima}`;
+    } else {
+        frequencyElement.textContent = 'Frequência: -- Hz';
+        noteElement.textContent = 'Nota: --';
+    }
 
-    document.getElementById('note-detected').textContent = `Nota: ${closestNote}`;
-    document.getElementById('frequency-detected').textContent = `Frequência: ${pitch.toFixed(2)} Hz`;
-
-    requestAnimationFrame(detectPitch);
+    requestAnimationFrame(detectarFrequencia);
 }
 
-// Função fictícia para calcular frequência
-function getFrequencyFromAudioData(data) {
-    // Algoritmo real para detectar a frequência (usando autocorrelation ou similar)
-    return Math.random() * 400;  // Exemplo temporário
-}
+function calcularFrequencia(buffer) {
+    let maxCorr = 0;
+    let bestOffset = -1;
+    const rms = buffer.reduce((sum, val) => sum + val * val, 0) / buffer.length;
 
-// Função para encontrar a nota mais próxima
-function getClosestNoteFromFrequency(frequency) {
-    let closestNote = null;
-    let closestFreqDiff = Infinity;
+    if (rms < 0.01) return null; // Sem som detectado
 
-    for (const [note, freq] of Object.entries(frequencies)) {
-        const diff = Math.abs(frequency - freq);
-        if (diff < closestFreqDiff) {
-            closestFreqDiff = diff;
-            closestNote = note;
+    for (let offset = 0; offset < buffer.length / 2; offset++) {
+        let corr = 0;
+
+        for (let i = 0; i < buffer.length / 2; i++) {
+            corr += buffer[i] * buffer[i + offset];
+        }
+
+        if (corr > maxCorr) {
+            maxCorr = corr;
+            bestOffset = offset;
         }
     }
 
-    return closestNote || 'Indefinido';
+    const freq = audioContext.sampleRate / bestOffset;
+    return freq;
+}
+
+function obterNotaMaisProxima(frequencia) {
+    let notaMaisProxima = null;
+    let menorDiferenca = Infinity;
+
+    for (const [nota, freqAlvo] of Object.entries(notas)) {
+        const diferenca = Math.abs(frequencia - freqAlvo);
+        if (diferenca < menorDiferenca) {
+            menorDiferenca = diferenca;
+            notaMaisProxima = nota;
+        }
+    }
+
+    return notaMaisProxima;
 }
