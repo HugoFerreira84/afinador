@@ -60,17 +60,40 @@
 </head>
 <body>
 
- <div class="tuner">
+<div class="tuner">
     <div class="dial">
         <div class="pointer" id="pointer"></div>
         <div class="note" id="note">--</div>
     </div>
     <p id="status" class="status">Tocando...</p>
     <p id="frequency" class="frequency">Frequência: -- Hz</p>
+
+    <div class="mode-select">
+        <h4>Modo de Afinação</h4>
+        <label>
+            <input type="radio" name="mode" value="auto" checked> Automático
+        </label>
+        <label>
+            <input type="radio" name="mode" value="manual"> Manual
+        </label>
+
+        <div id="manual-select" style="display:none;">
+            <label for="string-select">Escolha a Corda:</label>
+            <select id="string-select">
+                <option value="E2">Mi (E2)</option>
+                <option value="A2">Lá (A2)</option>
+                <option value="D3">Ré (D3)</option>
+                <option value="G3">Sol (G3)</option>
+                <option value="B3">Si (B3)</option>
+                <option value="E4">Mi (E4)</option>
+            </select>
+        </div>
+    </div>
 </div>
 
 <button id="toggle-btn">Iniciar</button>
 <p id="error-msg" class="error-msg"></p>
+
 
 
     <script src="script.js"></script>
