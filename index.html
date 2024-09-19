@@ -10,35 +10,68 @@
             text-align: center;
             background-color: #f4f4f4;
         }
-        h1 {
-            margin-top: 50px;
-        }
-        .status {
-            margin: 20px;
-            font-size: 18px;
-        }
-        .note {
-            font-size: 36px;
-            font-weight: bold;
-            color: #007bff;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 10px;
-        }
+  .tuner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.dial {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border: 5px solid #333;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #333, #777);
+    box-shadow: inset 0px 0px 20px rgba(0, 0, 0, 0.5);
+}
+
+.pointer {
+    position: absolute;
+    width: 2px;
+    height: 100px;
+    background-color: red;
+    transform-origin: 50% 100%;
+    top: 50px;
+    left: 50%;
+    transform: rotate(0deg);
+    transition: transform 0.1s ease-out;
+}
+
+.note {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+}
+
+.status, .frequency, .error-msg {
+    font-size: 18px;
+    color: white;
+    text-align: center;
+    margin-top: 10px;
+}
+
     </style>
 </head>
 <body>
 
-     <h1>Afinador de Violão</h1>
-    <div class="display">
-        <h2 id="status">Clique em Iniciar</h2>
-        <h2 id="frequency">Frequência: -- Hz</h2>
-        <h2 id="note">Nota: --</h2>
-        <button id="toggle-btn">Iniciar</button>
-        <div id="error-msg"></div>
+ <div class="tuner">
+    <div class="dial">
+        <div class="pointer" id="pointer"></div>
+        <div class="note" id="note">--</div>
     </div>
+    <p id="status" class="status">Tocando...</p>
+    <p id="frequency" class="frequency">Frequência: -- Hz</p>
+</div>
+
+<button id="toggle-btn">Iniciar</button>
+<p id="error-msg" class="error-msg"></p>
+
 
     <script src="script.js"></script>
 </body>
